@@ -3379,6 +3379,7 @@ class LockCachingAudioSource extends StreamAudioSource {
   final _requests = <_StreamingByteRangeRequest>[];
   final _downloadProgressSubject = BehaviorSubject<double>();
   bool _downloading = false;
+  final HttpClient Function()? createCustomHttpClient;
 
   /// Creates a [LockCachingAudioSource] to that provides [uri] to the player
   /// while simultaneously caching it to [cacheFile]. If no cache file is
@@ -3389,6 +3390,7 @@ class LockCachingAudioSource extends StreamAudioSource {
   LockCachingAudioSource(
     this.uri, {
     this.headers,
+    this.createCustomHttpClient,
     File? cacheFile,
     dynamic tag,
   })  : cacheFile =
@@ -3477,7 +3479,8 @@ class LockCachingAudioSource extends StreamAudioSource {
     File getEffectiveCacheFile() =>
         partialCacheFile.existsSync() ? partialCacheFile : cacheFile;
 
-    final httpClient = _createHttpClient(userAgent: _player?._userAgent);
+    final httpClient = createCustomHttpClient?.call() ??
+        _createHttpClient(userAgent: _player?._userAgent);
     final httpRequest = await _getUrl(httpClient, uri, headers: headers);
     final response = await httpRequest.close();
     if (response.statusCode != 200) {
@@ -3592,7 +3595,8 @@ class LockCachingAudioSource extends StreamAudioSource {
         _requests.remove(request);
         final start = request.start!;
         final end = request.end ?? sourceLength;
-        final httpClient = _createHttpClient(userAgent: _player?._userAgent);
+        final httpClient = createCustomHttpClient?.call() ??
+            _createHttpClient(userAgent: _player?._userAgent);
 
         final rangeRequest = _HttpRangeRequest(start, end);
         _getUrl(httpClient, uri, headers: {
