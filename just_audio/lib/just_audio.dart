@@ -841,6 +841,7 @@ class AudioPlayer {
     }
 
     try {
+      _proxy.start();
       await source._setup(this);
       checkInterruption();
       source._shuffle(initialIndex: initialSeekValues?.index ?? 0);
