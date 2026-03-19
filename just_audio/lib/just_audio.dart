@@ -1002,6 +1002,7 @@ class AudioPlayer {
     }
 
     try {
+      await _proxy.start();
       if (_active) {
         await source._onLoad();
         checkInterruption();
